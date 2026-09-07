@@ -1,0 +1,81 @@
+2TB_Nvme2 볼륨에 대한 폴더 경로의 목록입니다.
+볼륨 일련 번호는 6657-F8FC입니다.
+H:.
+│  .gitignore
+│  filelist.txt
+│  make_tree.bat
+│  
+├─bin
+│  └─Debug x64
+├─include
+├─lib64
+├─obj
+│  └─TestMFC
+│      └─Debug x64
+│          │  TestMFC.log
+│          │  TestMFCD.exe.recipe
+│          │  
+│          └─TestMFC.tlog
+│                  CL.command.1.tlog
+│                  CL.read.1.tlog
+│                  CL.write.1.tlog
+│                  link.command.1.tlog
+│                  link.read.1.tlog
+│                  link.write.1.tlog
+│                  rc.command.1.tlog
+│                  rc.read.1.tlog
+│                  rc.write.1.tlog
+│                  TestMFC.lastbuildstate
+│                  
+├─src
+│  ├─DirectX11
+│  │  └─DirectX11
+│  │          DirectX11.cpp
+│  │          DirectX11.vcxproj
+│  │          DirectX11.vcxproj.filters
+│  │          DirectX11.vcxproj.user
+│  │          
+│  ├─DirectX7
+│  │  │  DirectX7.cpp
+│  │  │  DirectX7.vcxproj
+│  │  │  DirectX7.vcxproj.filters
+│  │  │  DirectX7.vcxproj.user
+│  │  │  
+│  │  └─Debug
+│  │      │  DirectX7.exe.recipe
+│  │      │  DirectX7.ilk
+│  │      │  DirectX7.log
+│  │      │  DirectX7.obj
+│  │      │  vc142.idb
+│  │      │  vc142.pdb
+│  │      │  vcpkg.applocal.log
+│  │      │  
+│  │      └─DirectX7.tlog
+│  │              CL.command.1.tlog
+│  │              CL.read.1.tlog
+│  │              CL.write.1.tlog
+│  │              DirectX7.lastbuildstate
+│  │              link.command.1.tlog
+│  │              link.read.1.tlog
+│  │              link.write.1.tlog
+│  │              
+│  └─DirectX8
+│      └─DirectX8
+│              DirectX8.cpp
+│              DirectX8.vcxproj
+│              DirectX8.vcxproj.filters
+│              DirectX8.vcxproj.user
+│              
+├─workspace
+│  │  DirectXTest.sln
+│  │  
+│  └─Debug
+│          DirectX7.exe
+│          DirectX7.pdb
+│          
+├─작업지시
+│      work 1.md
+│      작업 지시 템플릿(MFC).md
+│      
+└─참고자료
+    └─커밋로그
