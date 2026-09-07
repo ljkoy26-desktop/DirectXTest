@@ -1,23 +1,36 @@
 ﻿#include <windows.h>
 #include <d3d8.h>
 
+#define DIRECTINPUT_VERSION 0x0800
+#include <dinput.h>
+
 #pragma comment(lib, "d3d8.lib")
+#pragma comment(lib, "dinput8.lib")
+#pragma comment(lib, "dxguid.lib")
 
 #define SCREEN_WIDTH  640
 #define SCREEN_HEIGHT 480
+#define SQUARE_SIZE   32
 #define FULLSCREEN_MODE 0  // 1 = 풀스크린, 0 = 창 모드
 
-LPDIRECT3D8       g_lpD3D       = NULL;
-LPDIRECT3DDEVICE8 g_lpD3DDevice = NULL;
-HWND              g_hWnd        = NULL;
-BOOL              g_bActive     = FALSE;
+LPDIRECT3D8           g_lpD3D         = NULL;
+LPDIRECT3DDEVICE8     g_lpD3DDevice   = NULL;
+LPDIRECTINPUT8        g_lpDI8         = NULL;
+LPDIRECTINPUTDEVICE8  g_lpDIDKeyboard = NULL;
+HWND                  g_hWnd          = NULL;
+BOOL                  g_bActive       = FALSE;
+int                   g_nSquareX      = 0;
+int                   g_nSquareY      = 0;
 
 LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 bool InitWindow(HINSTANCE hInstance, int nCmdShow);
 bool InitDirect3D(HWND hWnd);
+bool InitDirectInput(HWND hWnd);
 bool RestoreDevice();
+void UpdateInput();
 void RenderFrame();
 void ReleaseDirect3D();
+void ReleaseDirectInput();
 
 int main()
 {
@@ -30,6 +43,13 @@ int main()
 
     if (!InitDirect3D(g_hWnd))
     {
+        ReleaseDirect3D();
+        return 1;
+    }
+
+    if (!InitDirectInput(g_hWnd))
+    {
+        ReleaseDirectInput();
         ReleaseDirect3D();
         return 1;
     }
@@ -51,9 +71,11 @@ int main()
             continue;
         }
 
+        UpdateInput();
         RenderFrame();
     }
 
+    ReleaseDirectInput();
     ReleaseDirect3D();
     return static_cast<int>(msg.wParam);
 }
@@ -143,6 +165,48 @@ bool InitDirect3D(HWND hWnd)
     return true;
 }
 
+bool InitDirectInput(HWND hWnd)
+{
+    HRESULT hr = DirectInput8Create(
+        GetModuleHandle(NULL),
+        DIRECTINPUT_VERSION,
+        IID_IDirectInput8,
+        reinterpret_cast<void**>(&g_lpDI8),
+        NULL);
+
+    if (FAILED(hr))
+    {
+        return false;
+    }
+
+    hr = g_lpDI8->CreateDevice(GUID_SysKeyboard, &g_lpDIDKeyboard, NULL);
+
+    if (FAILED(hr))
+    {
+        return false;
+    }
+
+    hr = g_lpDIDKeyboard->SetDataFormat(&c_dfDIKeyboard);
+
+    if (FAILED(hr))
+    {
+        return false;
+    }
+
+    hr = g_lpDIDKeyboard->SetCooperativeLevel(hWnd, DISCL_NONEXCLUSIVE | DISCL_FOREGROUND);
+
+    if (FAILED(hr))
+    {
+        return false;
+    }
+
+    g_lpDIDKeyboard->Acquire();
+
+    g_nSquareX = (SCREEN_WIDTH - SQUARE_SIZE) / 2;
+    g_nSquareY = (SCREEN_HEIGHT - SQUARE_SIZE) / 2;
+    return true;
+}
+
 bool RestoreDevice()
 {
     if (g_lpD3DDevice == NULL)
@@ -175,6 +239,69 @@ bool RestoreDevice()
     return true;
 }
 
+void UpdateInput()
+{
+    if (g_lpDIDKeyboard == NULL)
+    {
+        return;
+    }
+
+    BYTE abKeyState[256] = { 0 };
+    HRESULT hr = g_lpDIDKeyboard->GetDeviceState(sizeof(abKeyState), abKeyState);
+
+    if (FAILED(hr))
+    {
+        g_lpDIDKeyboard->Acquire();
+        return;
+    }
+
+    if (abKeyState[DIK_ESCAPE] & 0x80)
+    {
+        PostMessage(g_hWnd, WM_CLOSE, 0, 0);
+        return;
+    }
+
+    if (abKeyState[DIK_LEFT] & 0x80)
+    {
+        g_nSquareX -= 4;
+    }
+
+    if (abKeyState[DIK_RIGHT] & 0x80)
+    {
+        g_nSquareX += 4;
+    }
+
+    if (abKeyState[DIK_UP] & 0x80)
+    {
+        g_nSquareY -= 4;
+    }
+
+    if (abKeyState[DIK_DOWN] & 0x80)
+    {
+        g_nSquareY += 4;
+    }
+
+    if (g_nSquareX < 0)
+    {
+        g_nSquareX = 0;
+    }
+
+    if (g_nSquareX > SCREEN_WIDTH - SQUARE_SIZE)
+    {
+        g_nSquareX = SCREEN_WIDTH - SQUARE_SIZE;
+    }
+
+    if (g_nSquareY < 0)
+    {
+        g_nSquareY = 0;
+    }
+
+    if (g_nSquareY > SCREEN_HEIGHT - SQUARE_SIZE)
+    {
+        g_nSquareY = SCREEN_HEIGHT - SQUARE_SIZE;
+    }
+}
+
 void RenderFrame()
 {
     if (g_lpD3DDevice == NULL)
@@ -204,6 +331,14 @@ void RenderFrame()
         D3DCOLOR_XRGB(dwColorIndex, 0, 255 - dwColorIndex),
         1.0f, 0);
 
+    D3DRECT rcSquare = { g_nSquareX, g_nSquareY, g_nSquareX + SQUARE_SIZE, g_nSquareY + SQUARE_SIZE };
+
+    g_lpD3DDevice->Clear(
+        1, &rcSquare,
+        D3DCLEAR_TARGET,
+        D3DCOLOR_XRGB(255, 255, 0),
+        1.0f, 0);
+
     if (FAILED(g_lpD3DDevice->BeginScene()))
     {
         return;
@@ -225,6 +360,22 @@ void ReleaseDirect3D()
     {
         g_lpD3D->Release();
         g_lpD3D = NULL;
+    }
+}
+
+void ReleaseDirectInput()
+{
+    if (g_lpDIDKeyboard != NULL)
+    {
+        g_lpDIDKeyboard->Unacquire();
+        g_lpDIDKeyboard->Release();
+        g_lpDIDKeyboard = NULL;
+    }
+
+    if (g_lpDI8 != NULL)
+    {
+        g_lpDI8->Release();
+        g_lpDI8 = NULL;
     }
 }
 
