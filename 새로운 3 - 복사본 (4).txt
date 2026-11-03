@@ -1,0 +1,8 @@
+C:\Users\USER\Desktop\Github_clone\git_svn_mfc\GitSVNMFC\res
+
+위 경로에 bmp, png 이미지 넣어놨어.
+SetImageList 를 쓰던지 해서 Git Browser 상에서의 이미지 설정을 해줘 
+
+기본 / 추가 / 변경 / 삭제 
+
+추가내용 수정sdsd
