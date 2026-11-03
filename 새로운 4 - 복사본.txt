@@ -1,0 +1,15 @@
+
+#ifdef _DEBUG
+#if defined(CASE_1)
+    m_eAuthMode = AUTH_PAT;
+    m_radioPat.SetCheck(BST_CHECKED);
+    UpdateAuthUI(); 
+    m_editUrl.SetWindowTextW( _T("https://github.com/ljkoy26-desktop/DirectXTest.git"));
+    m_editPath.SetWindowTextW(_T("C:\\Users\\USER\\Desktop\\Github_clone\\pat\\test"));
+    m_editToken.SetWindowTextW(_T(""));    
+	
+	
+	위 부분의 editToken 은 아래 파일을 읽어서 값을 채울수 있도록 수정해줘 
+	그리고 github_classic_token.txt 파일은 gitignore 에 추가해줘 
+
+"C:\Users\USER\Desktop\Github_clone\git_svn_mfc\github_classic_token.txt"
